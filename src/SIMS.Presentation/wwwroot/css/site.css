@@ -1,0 +1,437 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+    --bg-body: #f4f6f9;
+    --bg-surface: #ffffff;
+    --bg-sidebar: #0b132b;
+    --bg-sidebar-hover: #1c2541;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-muted: #6b7280;
+    --border-color: #e5e7eb;
+    --brand-primary: #2563eb;
+    --brand-primary-hover: #1d4ed8;
+    --brand-soft: #eff6ff;
+    --success-soft: #ecfdf5;
+    --success-text: #047857;
+    --warning-soft: #fffbeb;
+    --warning-text: #b45309;
+    --danger-soft: #fef2f2;
+    --danger-text: #b91c1c;
+    --purple-soft: #f5f3ff;
+    --purple-text: #6d28d9;
+    --sidebar-width: 260px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 0;
+    font-size: 0.925rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* App Shell Layout */
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Left Sidebar */
+.app-sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--bg-sidebar);
+    color: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1030;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-brand {
+    padding: 1.35rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    text-decoration: none;
+    color: #ffffff;
+}
+
+.sidebar-brand:hover {
+    color: #ffffff;
+}
+
+.brand-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    flex-shrink: 0;
+}
+
+.brand-title {
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+
+.brand-subtitle {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    font-weight: 400;
+}
+
+.sidebar-nav {
+    padding: 1.25rem 0.85rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.nav-section-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+    font-weight: 600;
+    padding: 0.5rem 0.75rem 0.35rem;
+    margin-top: 0.5rem;
+}
+
+.nav-section-label:first-child {
+    margin-top: 0;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    color: #d1d5db;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    font-size: 0.88rem;
+    margin-bottom: 0.2rem;
+    transition: all 0.15s ease;
+}
+
+.sidebar-link svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.8;
+    flex-shrink: 0;
+}
+
+.sidebar-link:hover {
+    background-color: var(--bg-sidebar-hover);
+    color: #ffffff;
+}
+
+.sidebar-link.active {
+    background-color: var(--brand-primary);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+}
+
+.sidebar-link.active svg {
+    opacity: 1;
+}
+
+.sidebar-footer {
+    padding: 1rem 1.15rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(0, 0, 0, 0.18);
+}
+
+/* Main Content Wrapper */
+.app-main {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* Topbar */
+.app-topbar {
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    height: 64px;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}
+
+.app-content {
+    padding: 1.75rem 2rem 2.5rem;
+    flex: 1;
+    max-width: 1440px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Modern Cards & Panels */
+.portal-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    overflow: hidden;
+}
+
+.portal-card-header {
+    padding: 1.1rem 1.35rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background-color: #ffffff;
+}
+
+.portal-card-title {
+    font-weight: 600;
+    font-size: 0.98rem;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.portal-card-body {
+    padding: 1.35rem;
+}
+
+/* Stat Cards */
+.stat-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem 1.35rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 24, 40, 0.06);
+}
+
+.stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.stat-value {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+    margin: 0.25rem 0;
+    letter-spacing: -0.02em;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.stat-meta {
+    font-size: 0.76rem;
+    color: var(--text-secondary);
+}
+
+/* Avatars */
+.avatar-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--brand-soft);
+    color: var(--brand-primary);
+    font-weight: 600;
+    font-size: 0.82rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.avatar-circle.avatar-lg {
+    width: 56px;
+    height: 56px;
+    font-size: 1.2rem;
+}
+
+/* Soft Badges */
+.badge-soft {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+}
+
+.badge-soft-primary {
+    background-color: var(--brand-soft);
+    color: var(--brand-primary);
+}
+
+.badge-soft-success {
+    background-color: var(--success-soft);
+    color: var(--success-text);
+}
+
+.badge-soft-warning {
+    background-color: var(--warning-soft);
+    color: var(--warning-text);
+}
+
+.badge-soft-danger {
+    background-color: var(--danger-soft);
+    color: var(--danger-text);
+}
+
+.badge-soft-purple {
+    background-color: var(--purple-soft);
+    color: var(--purple-text);
+}
+
+.mono-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+    background: #f3f4f6;
+    padding: 0.15rem 0.45rem;
+    border-radius: 6px;
+}
+
+/* Modern Portal Tables */
+.portal-table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: collapse;
+}
+
+.portal-table thead th {
+    background-color: #f9fafb;
+    color: #6b7280;
+    font-size: 0.74rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.portal-table tbody td {
+    padding: 0.85rem 1.25rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f3f4f6;
+    color: var(--text-primary);
+    font-size: 0.88rem;
+}
+
+.portal-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+.portal-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Role Switcher Pills in Topbar */
+.role-pill-group {
+    display: inline-flex;
+    background-color: #f3f4f6;
+    padding: 3px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.role-pill-btn {
+    border: none;
+    background: transparent;
+    color: #4b5563;
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.role-pill-btn:hover {
+    color: #111827;
+}
+
+.role-pill-btn.active {
+    background-color: #ffffff;
+    color: var(--brand-primary);
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* GPA Progress Bar */
+.gpa-track {
+    width: 80px;
+    height: 6px;
+    background-color: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.gpa-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+}
+
+@media (max-width: 991.98px) {
+    .app-sidebar {
+        position: static;
+        width: 100%;
+    }
+    .app-shell {
+        flex-direction: column;
+    }
+    .app-main {
+        margin-left: 0;
+    }
+}

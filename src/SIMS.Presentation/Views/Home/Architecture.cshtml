@@ -1,0 +1,90 @@
+@{
+    ViewData["Title"] = "System Architecture";
+}
+
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">System Architecture &amp; Design Principles</h4>
+    <p class="text-muted mb-0">
+        Technical overview of SOLID principles, Design Patterns, and Clean Coding practices implemented in SIMS.
+    </p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="portal-card h-100">
+            <div class="portal-card-body">
+                <span class="badge-soft badge-soft-primary mb-2">Association (Uses-a)</span>
+                <h6 class="fw-bold">Faculty &amp; Course</h6>
+                <p class="text-muted small mb-0">
+                    Lecturers (e.g., Dinh Van Dong) are assigned to teach courses (<code>UNIT20-APDP</code>), while maintaining independent lifecycles.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="portal-card h-100">
+            <div class="portal-card-body">
+                <span class="badge-soft badge-soft-success mb-2">Aggregation (Has-a)</span>
+                <h6 class="fw-bold">Department &amp; Student</h6>
+                <p class="text-muted small mb-0">
+                    Verified on <strong>@ViewBag.DepartmentName</strong>: Dissolving a department with @ViewBag.DepartmentStudentsBeforeDissolve students leaves all @ViewBag.SurvivingStudentsAfterDissolve student records intact.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="portal-card h-100">
+            <div class="portal-card-body">
+                <span class="badge-soft badge-soft-purple mb-2">Composition (Part-of)</span>
+                <h6 class="fw-bold">Student &amp; AcademicTranscript</h6>
+                <p class="text-muted small mb-0">
+                    Each <code>Student</code> owns a composed <code>AcademicTranscript</code> instance whose lifecycle is strictly bound to the student.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="portal-card mb-4">
+    <div class="portal-card-header">
+        <h5 class="portal-card-title">SOLID Principles Implementation</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="portal-table">
+            <thead>
+                <tr>
+                    <th style="width:22%;">Principle</th>
+                    <th style="width:28%;">Implementation</th>
+                    <th>Benefit in SIMS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="fw-semibold">Single Responsibility (SRP)</td>
+                    <td><span class="mono-id">CsvDataFormatter</span>, <span class="mono-id">StudentValidator</span></td>
+                    <td>Separates CSV row parsing, file persistence, and enrollment validation into dedicated classes.</td>
+                </tr>
+                <tr>
+                    <td class="fw-semibold">Open/Closed (OCP)</td>
+                    <td><span class="mono-id">User</span> &rarr; <span class="mono-id">GuestLecturer</span></td>
+                    <td>New user roles extend the abstract <code>User</code> base class without modifying <code>AuthenticationService</code>.</td>
+                </tr>
+                <tr>
+                    <td class="fw-semibold">Liskov Substitution (LSP)</td>
+                    <td><span class="mono-id">PostgraduateStudent : Student</span></td>
+                    <td><code>PostgraduateStudent</code> objects substitute seamlessly in all registration and course enrollment flows.</td>
+                </tr>
+                <tr>
+                    <td class="fw-semibold">Interface Segregation (ISP)</td>
+                    <td><span class="mono-id">ICourseRegisterable</span>, <span class="mono-id">ICourseManageable</span>, <span class="mono-id">IGradeSubmittable</span></td>
+                    <td>Each role implements only the specific contracts relevant to its workflow.</td>
+                </tr>
+                <tr>
+                    <td class="fw-semibold">Dependency Inversion (DIP)</td>
+                    <td><span class="mono-id">ICsvRepository&lt;T&gt;</span></td>
+                    <td>Application services depend on repository interfaces, enabling isolated unit testing with Moq.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

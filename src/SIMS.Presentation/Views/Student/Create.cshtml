@@ -1,0 +1,71 @@
+@model SIMS.Application.DTOs.StudentRegistrationDto
+@{
+    ViewData["Title"] = "New Student Admission";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4 class="fw-bold mb-1">New Student Admission</h4>
+                <p class="text-muted small mb-0">Register a new undergraduate or postgraduate student into the university registry.</p>
+            </div>
+            <a asp-controller="Student" asp-action="Index" class="btn btn-sm btn-light border">&larr; Back to Directory</a>
+        </div>
+
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h5 class="portal-card-title">Student Personal &amp; Academic Information</h5>
+                <span class="badge-soft badge-soft-primary">Academic Registry</span>
+            </div>
+            <div class="portal-card-body">
+                <form asp-controller="Student" asp-action="Create" method="post" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary">Student ID</label>
+                        <input asp-for="Id" class="form-control" required />
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label small fw-semibold text-secondary">Full Name</label>
+                        <input asp-for="Name" class="form-control" placeholder="e.g., Nguyen Van An" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary">University Email</label>
+                        <input asp-for="Email" type="email" class="form-control" placeholder="student@btec.edu.vn" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary">Major</label>
+                        <select asp-for="Major" class="form-select">
+                            <option value="Software Engineering">Software Engineering</option>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Data Science">Data Science</option>
+                            <option value="Cyber Security">Cyber Security</option>
+                            <option value="Artificial Intelligence">Artificial Intelligence</option>
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small fw-semibold text-secondary">Degree Program</label>
+                        <input asp-for="AcademicProgram" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary">Class / Cohort</label>
+                        <input asp-for="Cohort" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold text-secondary">Initial GPA (Auto)</label>
+                        <input type="text" value="0.00 (From Courses)" class="form-control bg-light text-muted" readonly />
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 rounded border small text-muted" style="background:#f9fafb;">
+                            <strong>Account Provisioning:</strong> New student accounts are automatically assigned the default password <code>Btec@123</code> (hashed with SHA-256) and will be required to set a new personal password on their first login.
+                        </div>
+                    </div>
+
+                    <div class="col-12 d-flex justify-content-end gap-2 pt-3 border-top mt-4">
+                        <a asp-controller="Student" asp-action="Index" class="btn btn-light border px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">Complete Registration</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

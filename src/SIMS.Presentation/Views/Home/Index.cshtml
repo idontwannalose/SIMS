@@ -1,0 +1,275 @@
+﻿@model SIMS.Presentation.Models.DashboardViewModel
+@using SIMS.Domain.Entities
+@using SIMS.Domain.Enums
+@{
+    ViewData["Title"] = "Dashboard";
+    var role = Model.CurrentUser.GetRole();
+    var currentStudent = Model.CurrentUser as Student;
+}
+
+@if (role == Role.STUDENT && currentStudent != null)
+{
+    <!-- STUDENT PORTAL DASHBOARD (Only shows the logged-in student's own information) -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h4 class="fw-bold mb-1">Welcome, @currentStudent.Name</h4>
+            <p class="text-muted mb-0">
+                @currentStudent.AcademicProgram &bull; @currentStudent.Major (Class @currentStudent.Cohort)
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="Student" asp-action="Details" asp-route-id="@currentStudent.Id" class="btn btn-primary" style="border-radius:8px;">
+                View Full Transcript
+            </a>
+            <a asp-controller="Course" asp-action="Index" class="btn btn-light border" style="border-radius:8px;">
+                Browse Courses
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Student ID</div>
+                    <div class="stat-value">@currentStudent.Id</div>
+                    <div class="stat-meta">@currentStudent.Email</div>
+                </div>
+                <div class="stat-icon" style="background:#eff6ff;color:#2563eb;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Cumulative GPA</div>
+                    <div class="stat-value">@currentStudent.GPA.ToString("F2") <span style="font-size:1rem;font-weight:400;color:#6b7280;">/ 4.00</span></div>
+                    <div class="stat-meta">Academic Standing: Good</div>
+                </div>
+                <div class="stat-icon" style="background:#ecfdf5;color:#059669;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Enrolled Modules</div>
+                    <div class="stat-value">@Model.TotalEnrollmentsInCsv</div>
+                    <div class="stat-meta">Active semester registrations</div>
+                </div>
+                <div class="stat-icon" style="background:#fffbeb;color:#d97706;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="portal-card">
+        <div class="portal-card-header">
+            <h5 class="portal-card-title">My Enrolled Courses</h5>
+            <a asp-controller="Course" asp-action="Index" class="btn btn-sm btn-outline-primary">Enroll in New Course</a>
+        </div>
+        <div class="table-responsive">
+            <table class="portal-table">
+                <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Course Title</th>
+                        <th>Date Enrolled</th>
+                        <th>Status</th>
+                        <th>Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.RecentEnrollments.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">You are not enrolled in any courses yet.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var enr in Model.RecentEnrollments)
+                        {
+                            var course = Model.Courses.FirstOrDefault(c => c.CourseId == enr.CourseId);
+                            <tr>
+                                <td><span class="mono-id">@enr.CourseId</span></td>
+                                <td class="fw-semibold">@(course?.CourseName ?? enr.CourseId)</td>
+                                <td class="text-muted">@enr.EnrollmentDate.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    <span class="badge-soft @(enr.Grade.HasValue ? "badge-soft-success" : "badge-soft-warning")">
+                                        @enr.Status
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (enr.Grade.HasValue)
+                                    {
+                                        <span class="fw-bold">@enr.Grade.Value.ToString("F2")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">In Progress</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <!-- ADMIN & FACULTY PORTAL DASHBOARD -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h4 class="fw-bold mb-1">Welcome back, @Model.CurrentUser.GetName()</h4>
+            <p class="text-muted mb-0">
+                @(role == Role.ADMIN ? "Academic Registry & University Administration Overview" : "Faculty Teaching & Student Assessment Overview")
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="Student" asp-action="Index" class="btn btn-light border bg-white" style="border-radius:8px;">
+                Search Students
+            </a>
+            @if (role == Role.ADMIN)
+            {
+                <a asp-controller="Student" asp-action="Create" class="btn btn-primary" style="border-radius:8px;">
+                    + New Student Admission
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-4">
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Total Active Students</div>
+                    <div class="stat-value">@Model.TotalStudentsInCsv.ToString("N0")</div>
+                    <div class="stat-meta">Enrolled across all cohorts</div>
+                </div>
+                <div class="stat-icon" style="background:#eff6ff;color:#2563eb;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-4">
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">University Courses</div>
+                    <div class="stat-value">@Model.TotalCoursesInCsv</div>
+                    <div class="stat-meta">Active semester modules</div>
+                </div>
+                <div class="stat-icon" style="background:#ecfdf5;color:#059669;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-4">
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Course Enrollments</div>
+                    <div class="stat-value">@Model.TotalEnrollmentsInCsv</div>
+                    <div class="stat-meta">Current term registrations</div>
+                </div>
+                <div class="stat-icon" style="background:#fffbeb;color:#d97706;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="portal-card h-100">
+                <div class="portal-card-header">
+                    <h5 class="portal-card-title">Recent Student Records</h5>
+                    <a asp-controller="Student" asp-action="Index" class="btn btn-sm btn-light border">
+                        View All Students &rarr;
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="portal-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>ID</th>
+                                <th>Major</th>
+                                <th>GPA</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var student in Model.FeaturedStudents)
+                            {
+                                var parts = student.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                                string initials = parts.Length >= 2
+                                    ? $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant()
+                                    : student.Name[..Math.Min(2, student.Name.Length)].ToUpperInvariant();
+                                double gpaPercent = Math.Clamp((student.GPA / 4.0) * 100.0, 0, 100);
+
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="avatar-circle">@initials</div>
+                                            <div>
+                                                <div class="fw-semibold text-dark">@student.Name</div>
+                                                <div class="text-muted" style="font-size:0.77rem;">@student.Email</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="mono-id">@student.Id</span></td>
+                                    <td>@student.Major</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fw-bold">@student.GPA.ToString("F2")</span>
+                                            <div class="gpa-track">
+                                                <div class="gpa-fill" style="width:@gpaPercent.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)%;"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <a asp-controller="Student" asp-action="Details" asp-route-id="@student.Id"
+                                           class="btn btn-sm btn-light border">
+                                            Details
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="portal-card h-100">
+                <div class="portal-card-header">
+                    <h5 class="portal-card-title">Active Courses</h5>
+                    <a asp-controller="Course" asp-action="Index" class="text-decoration-none small fw-semibold">View All</a>
+                </div>
+                <div class="list-group list-group-flush">
+                    @foreach (var course in Model.Courses.Take(6))
+                    {
+                        <div class="list-group-item px-3 py-3 border-bottom-0 border-top">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <span class="mono-id">@course.CourseId</span>
+                                <span class="badge-soft badge-soft-success">@course.Credits Credits</span>
+                            </div>
+                            <div class="fw-semibold text-dark mb-1" style="font-size:0.9rem;">@course.CourseName</div>
+                            <div class="text-muted" style="font-size:0.78rem;">
+                                Lecturer: @course.LecturerName
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}

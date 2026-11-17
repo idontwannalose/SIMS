@@ -1,0 +1,209 @@
+@model SIMS.Presentation.Models.StudentProfileViewModel
+@using SIMS.Domain.Entities
+@using SIMS.Domain.Enums
+@{
+    ViewData["Title"] = $"{Model.Student.Name} — Profile & Transcript";
+    bool isPg = Model.Student is PostgraduateStudent;
+    var pgStudent = Model.Student as PostgraduateStudent;
+    var isStudentRole = Model.CurrentUser.GetRole() == Role.STUDENT;
+    var parts = Model.Student.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    string initials = parts.Length >= 2
+        ? $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant()
+        : Model.Student.Name[..Math.Min(2, Model.Student.Name.Length)].ToUpperInvariant();
+}
+
+<!-- Student Header Profile Card -->
+<div class="portal-card mb-4">
+    <div class="portal-card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="avatar-circle avatar-lg">@initials</div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h4 class="fw-bold mb-0">@Model.Student.Name</h4>
+                    <span class="mono-id">@Model.Student.Id</span>
+                </div>
+                <div class="text-muted small">
+                    @Model.Student.Email &bull; @Model.Student.Major &bull; @Model.Student.AcademicProgram (Cohort @Model.Student.Cohort)
+                </div>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-4">
+            <div class="text-end">
+                <div class="text-muted small">Cumulative GPA</div>
+                <div class="fs-3 fw-bold text-primary">@Model.Student.GPA.ToString("F2") <span class="fs-6 text-muted fw-normal">/ 4.00</span></div>
+            </div>
+            @if (!isStudentRole)
+            {
+                <a asp-controller="Student" asp-action="Index" class="btn btn-light border btn-sm">&larr; Back to Students</a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Profile Details & Course Registration -->
+    <div class="col-lg-4">
+        <div class="portal-card mb-4">
+            <div class="portal-card-header">
+                <h5 class="portal-card-title">Personal &amp; Academic Details</h5>
+            </div>
+            <div class="portal-card-body">
+                <form asp-controller="Student" asp-action="UpdateStudentInfo" method="post" class="row g-3">
+                    <input type="hidden" name="id" value="@Model.Student.Id" />
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold text-secondary mb-1">Full Name</label>
+                        <input type="text" name="name" class="form-control form-control-sm" value="@Model.Student.Name" @(isStudentRole ? "readonly" : "required") />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold text-secondary mb-1">Email</label>
+                        <input type="email" name="email" class="form-control form-control-sm" value="@Model.Student.Email" @(isStudentRole ? "readonly" : "required") />
+                    </div>
+                    <div class="col-md-7">
+                        <label class="form-label small fw-semibold text-secondary mb-1">Major</label>
+                        <input type="text" name="major" class="form-control form-control-sm" value="@Model.Student.Major" @(isStudentRole ? "readonly" : "") />
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small fw-semibold text-secondary mb-1">Cohort</label>
+                        <input type="text" name="cohort" class="form-control form-control-sm" value="@Model.Student.Cohort" @(isStudentRole ? "readonly" : "") />
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label small fw-semibold text-secondary mb-1">Program</label>
+                        <input type="text" name="academicProgram" class="form-control form-control-sm" value="@Model.Student.AcademicProgram" @(isStudentRole ? "readonly" : "") />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary mb-1" title="Calculated automatically from course grades">GPA (Auto)</label>
+                        <input type="text" class="form-control form-control-sm bg-light fw-bold text-primary" value="@Model.Student.GPA.ToString("F2")" readonly />
+                    </div>
+                    @if (!isStudentRole)
+                    {
+                        <div class="col-12 mt-3">
+                            <button type="submit" class="btn btn-primary btn-sm w-100">Save Changes</button>
+                        </div>
+                    }
+                </form>
+            </div>
+        </div>
+
+        @if (Model.CanRegisterCourses && Model.AvailableCoursesForEnrollment.Any())
+        {
+            <div class="portal-card">
+                <div class="portal-card-header">
+                    <h5 class="portal-card-title">Course Registration</h5>
+                </div>
+                <div class="portal-card-body">
+                    <form asp-controller="Course" asp-action="AssignStudent" method="post">
+                        <input type="hidden" name="studentId" value="@Model.Student.Id" />
+                        <input type="hidden" name="returnToStudentId" value="@Model.Student.Id" />
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Select Course</label>
+                            <select name="courseId" class="form-select form-select-sm" required>
+                                @foreach (var c in Model.AvailableCoursesForEnrollment)
+                                {
+                                    <option value="@c.CourseId">
+                                        @c.CourseId — @c.CourseName @(c.RequiresEnrollmentKey ? "(🔒 Code Required)" : "(🔓 Open)")
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        @if (isStudentRole)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Course Access Code (If Protected)</label>
+                                <input type="password" name="enrollmentKey" class="form-control form-control-sm"
+                                       placeholder="Leave blank if course is Open" />
+                            </div>
+                        }
+                        <button type="submit" class="btn btn-success btn-sm w-100">
+                            + Enroll in Course
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Right Column: Official Academic Transcript -->
+    <div class="col-lg-8">
+        <div class="portal-card h-100">
+            <div class="portal-card-header">
+                <div>
+                    <h5 class="portal-card-title">Academic Transcript</h5>
+                    <div class="text-muted small">Enrolled modules, credits, and recorded grades</div>
+                </div>
+                <span class="badge-soft badge-soft-success">@Model.Enrollments.Count Modules</span>
+            </div>
+            <div class="table-responsive">
+                <table class="portal-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Course Title</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Grade</th>
+                            @if (Model.CanSubmitGrades)
+                            {
+                                <th class="text-end">Update Grade</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Enrollments.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    No course enrollments found.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.Enrollments)
+                            {
+                                <tr>
+                                    <td><span class="mono-id">@item.Enrollment.CourseId</span></td>
+                                    <td>
+                                        <div class="fw-semibold">@(item.Course?.CourseName ?? item.Enrollment.CourseId)</div>
+                                        <div class="text-muted" style="font-size:0.75rem;">
+                                            @(item.Course?.Credits ?? 15) Credits &bull; @(item.Course?.LecturerName ?? "Faculty")
+                                        </div>
+                                    </td>
+                                    <td class="text-muted">@item.Enrollment.EnrollmentDate.ToString("dd MMM yyyy")</td>
+                                    <td>
+                                        <span class="badge-soft @(item.Enrollment.Grade.HasValue ? "badge-soft-success" : "badge-soft-warning")">
+                                            @item.Enrollment.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (item.Enrollment.Grade.HasValue)
+                                        {
+                                            <span class="fw-bold text-dark fs-6">@item.Enrollment.Grade.Value.ToString("F2")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">In Progress</span>
+                                        }
+                                    </td>
+                                    @if (Model.CanSubmitGrades)
+                                    {
+                                        <td class="text-end">
+                                            <form asp-controller="Course" asp-action="SubmitGrade" method="post" class="d-inline-flex gap-1">
+                                                <input type="hidden" name="studentId" value="@Model.Student.Id" />
+                                                <input type="hidden" name="courseId" value="@item.Enrollment.CourseId" />
+                                                <input type="hidden" name="returnToStudentId" value="@Model.Student.Id" />
+                                                <input type="number" name="grade" step="0.05" min="0" max="4.0"
+                                                       value="@(item.Enrollment.Grade?.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) ?? "3.80")"
+                                                       class="form-control form-control-sm" style="width:78px;" required />
+                                                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                                            </form>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,187 @@
+﻿@using SIMS.Domain.Entities
+@using SIMS.Domain.Enums
+@{
+    var currentUser = ViewBag.CurrentUser as User;
+    var activeRole = currentUser?.GetRole() ?? Role.STUDENT;
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "Home";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "Index";
+
+    string userInitials = "U";
+    if (!string.IsNullOrWhiteSpace(currentUser?.GetName()))
+    {
+        var parts = currentUser.GetName().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        userInitials = parts.Length >= 2
+            ? $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant()
+            : parts[0][..Math.Min(2, parts[0].Length)].ToUpperInvariant();
+    }
+
+    var roleBadgeClass = activeRole switch
+    {
+        Role.ADMIN => "badge-soft-danger",
+        Role.FACULTY => "badge-soft-primary",
+        Role.STUDENT => "badge-soft-success",
+        _ => "badge-soft-purple"
+    };
+
+    string roleDisplayName = activeRole switch
+    {
+        Role.ADMIN => "Administrator",
+        Role.FACULTY => "Faculty Lecturer",
+        Role.STUDENT => "Student",
+        _ => "Visiting Lecturer"
+    };
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — BTEC SIMS</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    @if (currentUser == null)
+    {
+        <main role="main">
+            @RenderBody()
+        </main>
+    }
+    else
+    {
+        <div class="app-shell">
+            <!-- Left Sidebar Navigation tailored strictly to the logged-in user's Role -->
+            <aside class="app-sidebar">
+                <a class="sidebar-brand" asp-controller="Home" asp-action="Index">
+                    <div class="brand-logo">S</div>
+                    <div>
+                        <div class="brand-title">BTEC SIMS</div>
+                        <div class="brand-subtitle">Student Information System</div>
+                    </div>
+                </a>
+
+                <nav class="sidebar-nav">
+                    <div class="nav-section-label">Menu</div>
+                    <a class="sidebar-link @(currentController == "Home" ? "active" : "")"
+                       asp-controller="Home" asp-action="Index">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                        <span>Dashboard</span>
+                    </a>
+
+                    @if (activeRole == Role.ADMIN || activeRole == Role.FACULTY)
+                    {
+                        <a class="sidebar-link @(currentController == "Student" && currentAction == "Index" ? "active" : "")"
+                           asp-controller="Student" asp-action="Index">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <span>Students</span>
+                        </a>
+                    }
+
+                    @if (activeRole == Role.ADMIN)
+                    {
+                        <a class="sidebar-link @(currentController == "Student" && currentAction == "Create" ? "active" : "")"
+                           asp-controller="Student" asp-action="Create">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                            <span>New Admission</span>
+                        </a>
+                    }
+
+                    @if (activeRole == Role.STUDENT)
+                    {
+                        <a class="sidebar-link @(currentController == "Student" && currentAction == "Details" ? "active" : "")"
+                           asp-controller="Student" asp-action="Details" asp-route-id="@currentUser.Id">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            <span>My Profile &amp; Transcript</span>
+                        </a>
+                    }
+
+                    <a class="sidebar-link @(currentController == "Course" ? "active" : "")"
+                       asp-controller="Course" asp-action="Index">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        <span>@(activeRole == Role.STUDENT ? "My Courses" : "Courses & Enrollment")</span>
+                    </a>
+
+                    <div class="nav-section-label">Account</div>
+                    <a class="sidebar-link @(currentController == "Auth" && currentAction == "ChangePassword" ? "active" : "")"
+                       asp-controller="Auth" asp-action="ChangePassword">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span>Change Password</span>
+                    </a>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div class="d-flex align-items-center justify-content-between gap-2">
+                        <div class="d-flex align-items-center gap-2 overflow-hidden">
+                            <div class="avatar-circle" style="background:rgba(59,130,246,0.2);color:#93c5fd;">
+                                @userInitials
+                            </div>
+                            <div class="overflow-hidden">
+                                <div class="text-white fw-semibold text-truncate" style="font-size:0.84rem;">
+                                    @currentUser.GetName()
+                                </div>
+                                <div class="text-white-50 text-truncate" style="font-size:0.73rem;">
+                                    @roleDisplayName
+                                </div>
+                            </div>
+                        </div>
+                        <form asp-controller="Auth" asp-action="Logout" method="post" class="m-0">
+                            <button type="submit" class="btn btn-sm btn-outline-light py-1 px-2" style="font-size:0.75rem;" title="Sign Out">
+                                Sign Out
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <div class="app-main">
+                <header class="app-topbar">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge-soft @roleBadgeClass">
+                            @roleDisplayName
+                        </span>
+                        <span class="text-muted small d-none d-md-inline">
+                            Academic Year 2025–2026
+                        </span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-muted small d-none d-sm-inline">@currentUser.GetEmail()</span>
+                        <form asp-controller="Auth" asp-action="Logout" method="post" class="m-0">
+                            <button type="submit" class="btn btn-sm btn-light border">
+                                Sign Out
+                            </button>
+                        </form>
+                    </div>
+                </header>
+
+                <div class="app-content">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius:10px;" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius:10px;" role="alert">
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <main role="main">
+                        @RenderBody()
+                    </main>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

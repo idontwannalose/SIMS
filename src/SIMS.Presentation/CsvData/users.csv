@@ -1,0 +1,7 @@
+﻿Id,Name,Email,Role,Metadata
+ADM001,Dr. Nguyen Quan Tri (System Admin),admin@btec.edu.vn,ADMIN,Academic Registry Office
+FAC001,Dinh Van Dong (Unit 20 Assessor),dong.dv@btec.edu.vn,FACULTY,Applied Programming and Design Principles
+FAC002,Dr. Le Thi Huong (Senior Faculty),huong.lt@btec.edu.vn,FACULTY,Data Structures & Algorithms
+GST001,Prof. Robert C. Martin (Guest Lecturer),unclebob@pearson.uk,GUEST_LECTURER,Pearson UK Visiting Scholar
+BH02191,Tran Quang Khai,khai.tq.bh02191@btec.edu.vn,STUDENT,Software Engineering
+BH02141,Luong The Long,long.lt.bh02141@btec.edu.vn,STUDENT,Software Engineering

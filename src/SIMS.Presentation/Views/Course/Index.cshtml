@@ -1,0 +1,257 @@
+@model SIMS.Presentation.Models.CourseManagementViewModel
+@using SIMS.Domain.Enums
+@{
+    ViewData["Title"] = "Courses & Enrollment";
+    var isStudent = Model.CurrentUser.GetRole() == Role.STUDENT;
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h4 class="fw-bold mb-1">@(isStudent ? "My Courses & Registration" : "Courses & Enrollment")</h4>
+        <p class="text-muted mb-0">
+            @(isStudent ? "Browse available university modules and enroll (enter access code if required by the lecturer)." : "Manage university curriculum, course access codes, and student module enrollments.")
+        </p>
+    </div>
+</div>
+
+@if (!isStudent)
+{
+    <div class="row g-4 mb-4">
+        @if (Model.CanManageCourses)
+        {
+            <div class="col-lg-7">
+                <div class="portal-card h-100">
+                    <div class="portal-card-header">
+                        <h5 class="portal-card-title">Add New Course</h5>
+                    </div>
+                    <div class="portal-card-body">
+                        <form asp-controller="Course" asp-action="CreateCourse" method="post" class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold text-secondary">Course Code</label>
+                                <input name="CourseId" class="form-control form-control-sm" placeholder="UNIT22-SEC" required />
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label small fw-semibold text-secondary">Course Name</label>
+                                <input name="CourseName" class="form-control form-control-sm" placeholder="Unit 22: Application Security" required />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-semibold text-secondary">Credits</label>
+                                <input name="Credits" type="number" value="15" min="1" max="60" class="form-control form-control-sm" required />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold text-secondary">Department</label>
+                                <input name="Department" value="Computing" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold text-secondary">Lecturer</label>
+                                <input name="LecturerName" value="Dinh Van Dong" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold text-secondary">Access Code / Password</label>
+                                <input name="EnrollmentKey" class="form-control form-control-sm" placeholder="Leave blank for Open" />
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary btn-sm w-100">+ Create Course</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="@(Model.CanManageCourses ? "col-lg-5" : "col-lg-12")">
+            <div class="portal-card h-100">
+                <div class="portal-card-header">
+                    <h5 class="portal-card-title">Assign Student to Course</h5>
+                </div>
+                <div class="portal-card-body">
+                    <form asp-controller="Course" asp-action="AssignStudent" method="post" class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Student ID</label>
+                            <input name="studentId" list="studentOptions" class="form-control form-control-sm"
+                                   placeholder="e.g., BH02191" required />
+                            <datalist id="studentOptions">
+                                @foreach (var s in Model.HighlightedStudents)
+                                {
+                                    <option value="@s.Id">@s.Name (@s.Major)</option>
+                                }
+                            </datalist>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Course</label>
+                            <select name="courseId" class="form-select form-select-sm" required>
+                                @foreach (var c in Model.Courses)
+                                {
+                                    <option value="@c.CourseId">@c.CourseId — @c.CourseName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success btn-sm w-100">Assign Student Directly</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Course Catalog Table -->
+<div class="portal-card mb-4">
+    <div class="portal-card-header">
+        <h5 class="portal-card-title">Available University Courses</h5>
+        <span class="text-muted small">@Model.Courses.Count Modules</span>
+    </div>
+    <div class="table-responsive">
+        <table class="portal-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Course Name</th>
+                    <th>Credits</th>
+                    <th>Lecturer</th>
+                    <th>Access Type</th>
+                    <th class="text-end">Enrollment / Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Courses)
+                {
+                    bool alreadyEnrolled = isStudent && Model.Enrollments.Any(e => e.Enrollment.CourseId.Equals(c.CourseId, StringComparison.OrdinalIgnoreCase));
+                    <tr>
+                        <td><span class="mono-id">@c.CourseId</span></td>
+                        <td>
+                            <div class="fw-semibold">@c.CourseName</div>
+                            <div class="text-muted" style="font-size:0.75rem;">@c.Department &bull; @c.AcademicProgram</div>
+                        </td>
+                        <td><span class="badge-soft badge-soft-primary">@c.Credits Credits</span></td>
+                        <td>@c.LecturerName</td>
+                        <td>
+                            @if (c.RequiresEnrollmentKey)
+                            {
+                                <span class="badge-soft badge-soft-warning">
+                                    &#128274; Password Protected
+                                </span>
+                                @if (!isStudent)
+                                {
+                                    <span class="mono-id ms-1" title="Course Access Code">@c.EnrollmentKey</span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="badge-soft badge-soft-success">
+                                    &#128275; Open Access
+                                </span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            @if (isStudent)
+                            {
+                                @if (alreadyEnrolled)
+                                {
+                                    <span class="badge-soft badge-soft-success">Enrolled</span>
+                                }
+                                else
+                                {
+                                    <form asp-controller="Course" asp-action="AssignStudent" method="post" class="d-inline-flex align-items-center gap-1 justify-content-end">
+                                        <input type="hidden" name="studentId" value="@Model.CurrentUser.Id" />
+                                        <input type="hidden" name="courseId" value="@c.CourseId" />
+                                        @if (c.RequiresEnrollmentKey)
+                                        {
+                                            <input type="password" name="enrollmentKey" class="form-control form-control-sm"
+                                                   placeholder="Access code..." style="width:130px;" required />
+                                        }
+                                        <button type="submit" class="btn btn-sm btn-primary">Enroll</button>
+                                    </form>
+                                }
+                            }
+                            else if (Model.CanManageCourses)
+                            {
+                                <form asp-controller="Course" asp-action="DeleteCourse" method="post" class="d-inline">
+                                    <input type="hidden" name="courseId" value="@c.CourseId" />
+                                    <button type="submit" class="btn btn-sm btn-light border text-danger">Delete</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">Active</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Enrollments Table -->
+<div class="portal-card">
+    <div class="portal-card-header">
+        <h5 class="portal-card-title">@(isStudent ? "My Enrollment History" : "Student Course Enrollments")</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="portal-table">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    @if (!isStudent)
+                    {
+                        <th>Student</th>
+                    }
+                    <th>Course</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Grade</th>
+                    @if (!isStudent)
+                    {
+                        <th class="text-end">Record</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Enrollments)
+                {
+                    <tr>
+                        <td><span class="mono-id">@item.Enrollment.EnrollmentId</span></td>
+                        @if (!isStudent)
+                        {
+                            <td>
+                                <div class="fw-semibold">@(item.Student?.Name ?? item.Enrollment.StudentId)</div>
+                                <div class="text-muted" style="font-size:0.75rem;">@item.Enrollment.StudentId</div>
+                            </td>
+                        }
+                        <td>
+                            <div class="fw-medium">@(item.Course?.CourseName ?? item.Enrollment.CourseId)</div>
+                            <div class="text-muted" style="font-size:0.75rem;">@item.Enrollment.CourseId</div>
+                        </td>
+                        <td class="text-muted">@item.Enrollment.EnrollmentDate.ToString("dd MMM yyyy")</td>
+                        <td>
+                            <span class="badge-soft @(item.Enrollment.Grade.HasValue ? "badge-soft-success" : "badge-soft-warning")">
+                                @item.Enrollment.Status
+                            </span>
+                        </td>
+                        <td>
+                            @if (item.Enrollment.Grade.HasValue)
+                            {
+                                <span class="fw-bold">@item.Enrollment.Grade.Value.ToString("F2")</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">In Progress</span>
+                            }
+                        </td>
+                        @if (!isStudent)
+                        {
+                            <td class="text-end">
+                                <a asp-controller="Student" asp-action="Details" asp-route-id="@item.Enrollment.StudentId"
+                                   class="btn btn-sm btn-light border">
+                                    Open
+                                </a>
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

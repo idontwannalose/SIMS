@@ -1,0 +1,9 @@
+﻿CourseId,CourseName,Credits,Department,LecturerName,AcademicProgram,MaxCapacity,EnrollmentKey
+UNIT20-APDP,Unit 20: Applied Programming and Design Principles,15,Computing,Dinh Van Dong,BTEC HND in Computing,60,APDP2025
+UNIT19-DSA,Unit 19: Data Structures and Algorithms,15,Computing,Dr. Le Thi Huong,BTEC HND in Computing,60,
+UNIT01-PROG,Unit 1: Programming,15,Computing,Dinh Van Dong,BTEC HND in Computing,60,
+UNIT04-DB,Unit 4: Database Design & Development,15,Computing,Dr. Le Thi Huong,BTEC HND in Computing,60,DB2025
+UNIT09-SDLC,Unit 9: Software Development Lifecycles,15,Software Engineering,Dinh Van Dong,BTEC HND in Computing,60,
+UNIT13-WEB,Unit 13: Website Design & Development,15,Computing,Dr. Le Thi Huong,BTEC HND in Computing,60,
+UNIT34-ARCH,Unit 34: Systems Architecture,15,Software Engineering,Dinh Van Dong,BTEC HND in Computing,50,ARCH2025
+UNIT47-AI,Unit 47: Emerging Technologies & AI,15,Artificial Intelligence,Dr. Le Thi Huong,BTEC HND in Computing,45,AI2025

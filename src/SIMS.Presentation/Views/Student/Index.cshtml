@@ -1,0 +1,156 @@
+@model SIMS.Presentation.Models.StudentDirectoryViewModel
+@using SIMS.Domain.Enums
+@{
+    ViewData["Title"] = "Students";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h4 class="fw-bold mb-1">Students</h4>
+        <p class="text-muted mb-0">
+            Search and manage student profiles across all academic departments.
+        </p>
+    </div>
+    @if (Model.CurrentUser.GetRole() == Role.ADMIN)
+    {
+        <a asp-controller="Student" asp-action="Create" class="btn btn-primary" style="border-radius:8px;">
+            + Add Student
+        </a>
+    }
+</div>
+
+<div class="portal-card mb-4">
+    <div class="portal-card-body">
+        <form asp-controller="Student" asp-action="Index" method="get" class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label small fw-semibold text-secondary">Search by ID, Name, or Email</label>
+                <input type="text" name="query" value="@Model.SearchQuery" class="form-control"
+                       placeholder="Search student ID, full name, or email..." />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold text-secondary">Major</label>
+                <select name="major" class="form-select">
+                    <option value="">All Majors</option>
+                    @foreach (var m in Model.AvailableMajors)
+                    {
+                        <option value="@m" selected="@(string.Equals(Model.SelectedMajor, m, StringComparison.OrdinalIgnoreCase))">@m</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+                <a asp-controller="Student" asp-action="Index" class="btn btn-light border">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="portal-card">
+    <div class="table-responsive">
+        <table class="portal-table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>ID</th>
+                    <th>Major</th>
+                    <th>Cohort</th>
+                    <th>GPA</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Students.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            No students matched your search criteria.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var s in Model.Students)
+                    {
+                        var parts = s.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        string initials = parts.Length >= 2
+                            ? $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant()
+                            : s.FullName[..Math.Min(2, s.FullName.Length)].ToUpperInvariant();
+                        double gpaPercent = Math.Clamp((s.GPA / 4.0) * 100.0, 0, 100);
+
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar-circle">@initials</div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">@s.FullName</div>
+                                        <div class="text-muted" style="font-size:0.77rem;">@s.Email</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="mono-id">@s.Id</span></td>
+                            <td>@s.Major</td>
+                            <td class="text-muted">@s.Cohort</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="fw-bold">@s.GPA.ToString("F2")</span>
+                                    <div class="gpa-track">
+                                        <div class="gpa-fill" style="width:@gpaPercent.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)%;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-1">
+                                    <a asp-controller="Student" asp-action="Details" asp-route-id="@s.Id"
+                                       class="btn btn-sm btn-light border">
+                                        View
+                                    </a>
+                                    @if (Model.CurrentUser.GetRole() == Role.ADMIN)
+                                    {
+                                        <form asp-controller="Student" asp-action="Delete" method="post" class="d-inline"
+                                              onsubmit="return confirm('Delete student @s.FullName (@s.Id)?');">
+                                            <input type="hidden" name="id" value="@s.Id" />
+                                            <button type="submit" class="btn btn-sm btn-light border text-danger">Delete</button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="p-3 border-top d-flex justify-content-between align-items-center bg-white">
+            <span class="small text-muted">Page @Model.CurrentPage of @Model.TotalPages (@Model.TotalCsvRecords.ToString("N0") records)</span>
+            <div class="btn-group btn-group-sm">
+                <a class="btn btn-light border @(Model.CurrentPage <= 1 ? "disabled" : "")"
+                   asp-action="Index"
+                   asp-route-query="@Model.SearchQuery"
+                   asp-route-major="@Model.SelectedMajor"
+                   asp-route-page="@(Model.CurrentPage - 1)">
+                    Previous
+                </a>
+                @for (int p = Math.Max(1, Model.CurrentPage - 2); p <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); p++)
+                {
+                    <a class="btn @(p == Model.CurrentPage ? "btn-primary" : "btn-light border")"
+                       asp-action="Index"
+                       asp-route-query="@Model.SearchQuery"
+                       asp-route-major="@Model.SelectedMajor"
+                       asp-route-page="@p">
+                        @p
+                    </a>
+                }
+                <a class="btn btn-light border @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")"
+                   asp-action="Index"
+                   asp-route-query="@Model.SearchQuery"
+                   asp-route-major="@Model.SelectedMajor"
+                   asp-route-page="@(Model.CurrentPage + 1)">
+                    Next
+                </a>
+            </div>
+        </div>
+    }
+</div>
